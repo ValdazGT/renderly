@@ -1,0 +1,11 @@
+node_modules/
+out/
+.renderly/
+tmp/
+*.log
+
+config.json
+data/keys.json
+data/keys.txt
+
+.DS_Store
