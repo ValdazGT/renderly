@@ -6,7 +6,8 @@ Everything must therefore be **deterministic**: the same `t` always produces the
 
 ## Aturan wajib
 
-1. Ukuran panggung selalu `RL.W` × `RL.H` (default 1080×1920). Posisi dalam piksel desain ini.
+1. Ukuran panggung desain selalu `RL.W` × `RL.H` = 1080×1920 (9:16), 1080×1080 (1:1), 1920×1080 (16:9).
+   Resolusi output boleh 720p atau 1080p — engine men-scale sendiri, jadi posisi selalu dalam piksel desain.
 2. Animasi **hanya** lewat `RL.tl` (timeline GSAP yang di-pause) memakai helper `RL.anim`, `RL.from`,
    `RL.fromTo`, `RL.reveal`, `RL.stagger`. Jangan pernah memanggil `gsap.to()` langsung, jangan pakai
    `requestAnimationFrame`, `setTimeout`, `setInterval`, CSS `animation`, atau CSS `transition`.

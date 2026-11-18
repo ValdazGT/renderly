@@ -148,12 +148,19 @@ Bottleneck nyata (diukur di Android/Termux):
 
 | Tahap | Biaya |
 | --- | --- |
-| AI menulis 4 scene paralel | ~60–80 s (model free tier) |
-| Render frame 720p | ~0,25 s/frame/browser |
-| Render frame 1080p | ~0,45 s/frame/browser |
+| AI menulis 4 scene paralel | ~60–90 s (model free tier, 1 panggilan/scene) |
+| Render frame 720p | ~0,27 s/frame/browser |
+| Render frame 1080p | ~0,44 s/frame/browser |
 | Encode + finalisasi | ~10–20 s |
 
-Untuk hasil cepat: `--res 720 --workers 2 --dur 24`. Untuk kualitas posting: default 1080p.
+Contoh nyata: video 18 detik (4 scene) selesai ~3,5 menit di Android/Termux:
+AI ~1,5 menit, render 543 frame dengan 2 browser ~1,5 menit, sisanya encode.
+
+Untuk hasil cepat: `--res 720 --workers 2 --dur 24`. Untuk kualitas posting: default 1080p
+(desain scene tetap 1080×1920, hanya resolusi output yang berubah).
+
+Kalau mau lebih cepat lagi: turunkan `--dur`, kurangi `--concurrency` hanya bila kena rate limit,
+dan hindari `filter: blur()` di scene.
 
 Jangan pakai `filter: blur()`, `backdrop-filter`, atau blend mode di scene — di renderer software
 biaya per frame bisa naik 10×. Kit sudah memakai radial-gradient untuk efek cahaya.

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'fs';
 import path from 'path';
-import { loadConfig, ROOT, ensureDir } from '../src/config.js';
+import { loadConfig, ROOT, ensureDir, designSize } from '../src/config.js';
 import { startServer } from '../src/render/server.js';
 import { launchBrowser } from '../src/render/browser.js';
 import { captureScene, previewScene } from '../src/render/capture.js';
@@ -38,10 +38,13 @@ try {
 
 	log.ok(`${voice.words.length} kata · ${duration.toFixed(2)}s`);
 
+	const design = designSize(cfg);
 	const meta = {
 		dur: duration,
 		width: cfg.render.width,
 		height: cfg.render.height,
+		designWidth: design.width,
+		designHeight: design.height,
 		mode,
 		theme: themeFor(cfg.style.palette),
 		fonts: '/assets/fonts',
@@ -104,7 +107,6 @@ try {
 
 	log.ok(`${path.relative(process.cwd(), outFile)} · ${check.duration.toFixed(2)}s · ${(check.size / 1024 / 1024).toFixed(2)}MB · ${check.streams.map(s => s.type).join('+')}`);
 	log.info(`selesai dalam ${((Date.now() - started) / 1000).toFixed(1)}s`);
-	log.info(info ? '' : '');
 } catch (err) {
 	log.fail(String(err.message));
 	process.exitCode = 1;

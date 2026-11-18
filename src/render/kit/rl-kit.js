@@ -44,8 +44,8 @@
 
 	const meta = global.__rlMeta || {};
 
-	RL.W = Number(meta.width) || 1080;
-	RL.H = Number(meta.height) || 1920;
+	RL.W = Number(meta.designWidth) || 1080;
+	RL.H = Number(meta.designHeight) || 1920;
 	RL.dur = Number(meta.dur) || 10;
 	RL.mode = meta.mode || '2d';
 	RL.theme = { ...FALLBACK_THEME, ...(meta.theme || {}) };
@@ -80,6 +80,14 @@
 			size *= 0.94;
 			el.style.fontSize = size + 'px';
 		}
+	}
+
+	function clampX(x, w, margin) {
+		const m = num(margin, 24);
+		const max = RL.W - w - m;
+
+		if (max <= m) return (RL.W - w) / 2;
+		return Math.max(m, Math.min(x, max));
 	}
 
 	function canvas() {
@@ -192,8 +200,9 @@
 	RL.text = function (spec) {
 		spec = spec || {};
 		const theme = RL.theme;
-		const w = num(spec.w, RL.W - 144);
-		const x = spec.x === undefined || spec.x === 'center' ? (RL.W - w) / 2 : num(spec.x, 72);
+		const w = Math.min(num(spec.w, RL.W - 144), RL.W - 48);
+		const wanted = spec.x === undefined || spec.x === 'center' ? (RL.W - w) / 2 : num(spec.x, 72);
+		const x = clampX(wanted, w);
 		const size = num(spec.size, 72);
 		const el = node('div', {
 			position: 'absolute',
@@ -241,11 +250,12 @@
 	RL.card = function (spec) {
 		spec = spec || {};
 		const theme = RL.theme;
+		const cardW = Math.min(num(spec.w, RL.W - 144), RL.W - 48);
 		const el = node('div', {
 			position: 'absolute',
-			left: px(num(spec.x, 72)),
+			left: px(clampX(num(spec.x, 72), cardW)),
 			top: px(num(spec.y, 500)),
-			width: px(num(spec.w, RL.W - 144)),
+			width: px(cardW),
 			height: spec.h === undefined ? 'auto' : px(spec.h),
 			borderRadius: px(num(spec.radius, 44)),
 			background: spec.fill || theme.card,
@@ -268,7 +278,7 @@
 		const theme = RL.theme;
 		const el = node('div', {
 			position: 'absolute',
-			left: px(num(spec.x, 72)),
+			left: px(Math.max(24, num(spec.x, 72))),
 			top: px(num(spec.y, 300)),
 			padding: `${num(spec.padY, 14)}px ${num(spec.padX, 30)}px`,
 			borderRadius: '999px',
@@ -326,11 +336,11 @@
 		const theme = RL.theme;
 		const type = spec.type || 'rect';
 		const size = num(spec.size, 240);
-		const w = num(spec.w, type === 'rect' ? 320 : size);
+		const w = Math.min(num(spec.w, type === 'rect' ? 320 : size), RL.W - 48);
 		const h = num(spec.h, type === 'rect' ? 180 : size);
 		const el = node('div', {
 			position: 'absolute',
-			left: px(num(spec.x, (RL.W - w) / 2)),
+			left: px(clampX(num(spec.x, (RL.W - w) / 2), w)),
 			top: px(num(spec.y, 700)),
 			width: px(w),
 			height: px(h),
@@ -752,12 +762,27 @@
 		const items = [];
 		const warnings = [];
 		const root = canvas();
+		const absPos = el => {
+			let x = 0;
+			let y = 0;
+			let node = el;
+
+			while (node && node !== root) {
+				x += node.offsetLeft || 0;
+				y += node.offsetTop || 0;
+				node = node.offsetParent;
+			}
+
+			return { x, y };
+		};
+
 		for (const el of root.querySelectorAll('[data-rl="text"],[data-rl="card"],[data-rl="svg"],[data-rl="icon"]')) {
+			const pos = absPos(el);
 			const box = {
 				kind: el.dataset.rl,
 				text: (el.textContent || '').trim().slice(0, 60),
-				x: Math.round(el.offsetLeft),
-				y: Math.round(el.offsetTop),
+				x: Math.round(pos.x),
+				y: Math.round(pos.y),
 				w: Math.round(el.offsetWidth),
 				h: Math.round(el.offsetHeight),
 			};

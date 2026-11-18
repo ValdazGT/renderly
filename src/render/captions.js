@@ -30,7 +30,7 @@ function assTime(t) {
 	return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}.${String(Math.min(99, cs)).padStart(2, '0')}`;
 }
 
-export function buildLines(words, { maxChars = 24, maxWords = 4, gapBreak = 1.1 } = {}) {
+export function buildLines(words, { maxChars = 22, maxWords = 4, gapBreak = 1.15 } = {}) {
 	const lines = [];
 	let current = null;
 
@@ -46,7 +46,7 @@ export function buildLines(words, { maxChars = 24, maxWords = 4, gapBreak = 1.1 
 
 		if (current && current.length) {
 			const last = current[current.length - 1];
-			const chars = current.join(' ').length + 1 + text.length;
+			const chars = current.map(w => w.w).join(' ').length + 1 + text.length;
 			const gap = word.t - (last.t + last.d);
 
 			if (current.length >= maxWords || chars > maxChars || gap > gapBreak) flush();
@@ -63,7 +63,7 @@ export function buildLines(words, { maxChars = 24, maxWords = 4, gapBreak = 1.1 
 	return lines.filter(line => line.length);
 }
 
-function fontSizeFor(text, { width, maxSize = 84, minSize = 38 }) {
+function fontSizeFor(text, { width, maxSize = 92, minSize = 44 }) {
 	const available = width * 0.86;
 	const estimate = text.length * 0.54 * maxSize;
 
@@ -85,7 +85,7 @@ export function buildASS(words, opts = {}) {
 	for (let li = 0; li < lines.length; li++) {
 		const line = lines[li];
 		const text = line.map(w => w.w).join(' ');
-		const size = fontSizeFor(text, { width, maxSize: opts.maxSize || 84, minSize: opts.minSize || 38 });
+		const size = fontSizeFor(text, { width, maxSize: opts.maxSize || 92, minSize: opts.minSize || 44 });
 		const last = line[line.length - 1];
 		const nextLine = lines[li + 1];
 		const lineEnd = Math.max(last.t + Math.min(0.6, last.d + 0.18), last.t + 0.12);

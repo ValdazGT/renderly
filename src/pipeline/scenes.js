@@ -1,9 +1,12 @@
 import fs from 'fs';
 import path from 'path';
+import vm from 'vm';
+import { parseJson } from '../util/json.js';
 import { chat } from '../ai/client.js';
 import { sceneSystem, sceneUser, sceneRepairUser, loadSdk } from '../ai/prompts.js';
 import { previewScene } from '../render/capture.js';
 import { themeFor, safeArea } from '../render/theme.js';
+import { designSize } from '../config.js';
 import { ROOT } from '../config.js';
 import * as log from '../util/log.js';
 
@@ -49,9 +52,12 @@ export function lintScene(html, { mode } = {}) {
 		if (!code.trim()) continue;
 
 		try {
-			new Function(code);
+			new vm.Script(code, { filename: 'scene.js' });
 		} catch (err) {
-			errors.push(`syntax error di <script>: ${String(err.message).slice(0, 140)}`);
+			const line = Number((String(err.stack || '').match(/scene\.js:(\d+)/) || [])[1] || 0);
+			const snippet = line ? String(code.split('\n')[line - 1] || '').trim().slice(0, 90) : '';
+
+			errors.push(`syntax error di <script>${line ? ` baris ${line}` : ''}: ${String(err.message).slice(0, 110)}${snippet ? ` → ${snippet}` : ''}`);
 			break;
 		}
 	}
@@ -60,28 +66,44 @@ export function lintScene(html, { mode } = {}) {
 }
 
 export function sceneMeta({ cfg, script, duration, mode }) {
+	const design = designSize(cfg);
+
 	return {
 		dur: duration,
 		width: cfg.render.width,
 		height: cfg.render.height,
+		designWidth: design.width,
+		designHeight: design.height,
 		mode,
 		theme: themeFor(script.palette),
 		fonts: '/assets/fonts',
 		topic: script.topic || script.title,
 		palette: script.palette,
-		safe: safeArea(cfg.render.height),
+		safe: safeArea(design.height),
 	};
 }
 
 function extractHtml(data) {
-	const raw = String(typeof data === 'string' ? data : data?.html || data?.code || data?.scene || '');
+	let raw = String(typeof data === 'string' ? data : data?.html || data?.code || data?.scene || '');
 
 	if (!raw.trim()) return '';
+
+	if (/^\s*[{[]/.test(raw)) {
+		const parsed = parseJson(raw);
+
+		if (parsed && typeof parsed === 'object' && (parsed.html || parsed.code || parsed.scene)) raw = String(parsed.html || parsed.code || parsed.scene);
+	}
 
 	const start = raw.search(/<!doctype html/i);
 	const end = raw.toLowerCase().lastIndexOf('</html>');
 
 	if (start !== -1 && end > start) return raw.slice(start, end + 7).trim();
+
+	if (start !== -1) {
+		const lastScript = raw.toLowerCase().lastIndexOf('</script>');
+
+		if (lastScript > start) return raw.slice(start, lastScript + 9).trim() + '\n</body>\n</html>';
+	}
 
 	return raw
 		.replace(/^\s*```[a-zA-Z]*\s*/m, '')

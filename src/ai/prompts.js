@@ -83,7 +83,8 @@ STANDAR VISUAL (wajib)
 - Teks pendukung kecil (label, angka) tetap besar dan kontras: minimal 32.
 - Komposisi: atas (chip/label) → tengah (hero visual + judul) → bawah aman sampai y=1380. Area y>1400 milik subtitle.
 - Warna diambil dari RL.theme, jangan bikin palet baru yang bertabrakan.
-- Maksimal ~16 elemen; banyak elemen membuat render lambat.
+- Maksimal ~16 elemen dan ~120 baris kode; ringkas, tanpa komentar panjang, satu blok <script> saja.
+  Banyak elemen / kode panjang membuat render lambat dan berisiko terpotong.
 
 LARANGAN
 - Emoji, Math.random, setTimeout, setInterval, requestAnimationFrame, fetch, aset dari internet.
@@ -110,7 +111,7 @@ KATA KUNCI BESAR YANG HARUS MUNCUL DI LAYAR: ${(scene.keywords || []).join(' | '
 ARAHAN VISUAL: ${scene.visual}
 BEAT: ${scene.beat || 'insight'}
 
-Tulis scene-nya sekarang sebagai JSON {"summary": "...", "html": "..."}.`;
+Tulis scene-nya sekarang. Balas langsung file HTML-nya (diawali <!doctype html>, diakhiri </html>), tanpa teks lain.`;
 }
 
 export function sceneRepairUser({ html, errors, duration, mode }) {

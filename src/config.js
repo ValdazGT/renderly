@@ -94,6 +94,12 @@ export function loadConfig() {
 	return cfg;
 }
 
+export function designSize(cfg) {
+	const width = 1080;
+
+	return { width, height: Math.round((width * cfg.render.height) / cfg.render.width) };
+}
+
 export function outDir(slug, dir) {
 	return path.join(ROOT, 'out', slug, dir || '');
 }
