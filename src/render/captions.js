@@ -89,7 +89,7 @@ export function buildASS(words, opts = {}) {
 		const last = line[line.length - 1];
 		const nextLine = lines[li + 1];
 		const lineEnd = Math.max(last.t + Math.min(0.6, last.d + 0.18), last.t + 0.12);
-		const hardEnd = nextLine && nextLine[0].t > line[0].t ? Math.min(lineEnd, nextLine[0].t) : lineEnd;
+		const hardEnd = nextLine && nextLine[0].t > line[0].t ? nextLine[0].t : lineEnd;
 
 		line.forEach((word, index) => {
 			const next = line[index + 1];
